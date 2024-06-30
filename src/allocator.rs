@@ -7,6 +7,7 @@ use x86_64::{
     },
     VirtAddr,
 };
+use bump::BumpAllocator;
 
 pub mod bump;
 
@@ -53,7 +54,7 @@ pub fn init_heap(
 }
 
 #[global_allocator]
-static ALLOCATOR: LockedHeap = LockedHeap::empty();
+static ALLOCATOR: Locked<BumpAllocator> = Locked::new(BumpAllocator::new());
 
 pub struct Locked<A> {
     inner: spin::Mutex<A>,
@@ -72,10 +73,5 @@ impl<A> Locked<A> {
 }
 
 fn align_up(addr: usize, align: usize) -> usize {
-    let remainder = addr & align;
-    if remainder == 0 {
-        addr
-    } else {
-        addr - remainder + align
-    }
+    (addr + align - 1) & !(align - 1)
 }
