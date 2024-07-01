@@ -8,7 +8,7 @@ extern crate alloc;
 
 use alloc::{boxed::Box, rc::Rc, vec, vec::Vec};
 use bootloader::{entry_point, BootInfo};
-use core::panic::PanicInfo;
+use core::{num, panic::PanicInfo};
 use rust_os::println;
 
 entry_point!(kernel_main);
@@ -53,6 +53,15 @@ fn kernel_main(boot_info: &'static BootInfo) -> ! {
 
     println!("It did not crash!");
     rust_os::hlt_loop();
+}
+
+async fn async_number() -> u32 {
+    42
+}
+
+async fn example_task() {
+    let number = async_number().await;
+    println!("async number: {}", number);
 }
 
 /// This function is called on panic.
