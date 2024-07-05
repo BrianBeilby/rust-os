@@ -1,9 +1,13 @@
 use alloc::boxed::Box;
-use core::sync::atomic::{AtomicU64, Ordering};
-use core::{future::Future, pin::Pin};
+use core::{
+    future::Future,
+    pin::Pin,
+    sync::atomic::{AtomicU64, Ordering},
+    task::{Context, Poll},
+};
 
-pub mod keyboard;
 pub mod executor;
+pub mod keyboard;
 
 pub struct Task {
     id: TaskId, // new
@@ -13,9 +17,13 @@ pub struct Task {
 impl Task {
     pub fn new(future: impl Future<Output = ()> + 'static) -> Task {
         Task {
-            id: TaskId::new(), // new
+            id: TaskId::new(),
             future: Box::pin(future),
         }
+    }
+
+    fn poll(&mut self, context: &mut Context) -> Poll<()> {
+        self.future.as_mut().poll(context)
     }
 }
 
